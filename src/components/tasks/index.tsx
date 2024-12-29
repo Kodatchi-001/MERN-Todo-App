@@ -5,6 +5,7 @@ import { TasksType } from '../../types';
 import { SlNotebook } from "react-icons/sl";
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
+import { motion } from 'framer-motion';
 
 export default function Tasks() {
     const [Task, setTask] = useState<string>('');
@@ -14,25 +15,29 @@ export default function Tasks() {
     const [TaskCreated, setTaskCreated] = useState<boolean>(false);
 
     const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>) => setTask(e.target.value);
-
     const AddNewTask = (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        /*---> Validation <---*/
         const Namevalidation = Task.trim() !== '';
         setFormValidation({ Name: Namevalidation });
-        // Alert Not Created
+
+        /*---> Alert Not Created <---*/
         setIsSubmitted(true);
         setTimeout(() => setIsSubmitted(false), 2000);
-        if (!Namevalidation) {
-            return
-        };
-        const NewTask: TasksType = {
-            Name: Task,
-            Checked: false
-        };
+
+        /*---> Return If Note Valid <---*/
+        if (!Namevalidation) { return };
+
+        /*---> Create New Task <---*/
+        const NewTask: TasksType = { Name: Task, Checked: false };
         setTasks([...Tasks, NewTask]);
-        // Alert Created
+
+        /*---> Alert Created <---*/
         setTaskCreated(true);
         setTimeout(() => setTaskCreated(false), 2000);
+
+        /*---> Clear Input <---*/
         setTask('');
     }
 
