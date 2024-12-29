@@ -43,7 +43,11 @@ export default function Tasks() {
 
     return <>
         <section className="w-full h-[65vh] sm:max-h-[830px] z-20 flex justify-center sm:pt-[9rem] relative">
-            <div className="w-[95%] sm:max-w-[850px] flex flex-col gap-5 p-[17px] z-20 absolute rounded-xl mt-[-8vh] sm:mt-0 shadow-xl bg-white">
+            <motion.div
+                initial={{ opacity: 0.8, marginTop: '6rem' }}
+                animate={{ opacity: 1, marginTop: '0rem' }}
+                transition={{ duration: 0.5 }}
+                className="w-[95%] sm:max-w-[850px] flex flex-col gap-5 p-[17px] z-20 absolute rounded-xl shadow-xl bg-white">
                 <form onSubmit={AddNewTask} className="w-full h-full flex items-center gap-4">
                     <Box className="w-full">
                         <TextField fullWidth type="text" className="w-full" size="medium" label="Create New Task" value={Task} onChange={HandelChanges} sx={{ '& fieldset': { borderColor: 'gray', border: '2px solid' }, '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: 'gray', border: '2px solid' }, '& .MuiInputLabel-root': { color: 'black', fontWeight: 'bold' }, '& .MuiInputLabel-root.Mui-focused': { color: 'black', }, '& .MuiInputBase-input': { color: 'black', fontWeight: 'bold' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' }, }} />
@@ -92,7 +96,7 @@ export default function Tasks() {
                         </ul>
                     </div>
                 </div> */}
-            </div>
+            </motion.div>
         </section>
         <div className='w-full h-1/2 py-8 flex justify-center items-end fixed bottom-0 z-40'>
             <div className='max-w-[800px] flex flex-col gap-4'>
