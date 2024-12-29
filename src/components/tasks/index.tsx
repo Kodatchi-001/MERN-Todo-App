@@ -10,7 +10,8 @@ export default function Tasks() {
     const [Task, setTask] = useState<string>('');
     const [Tasks, setTasks] = useState<TasksType[]>([]);
     const [FormValidation, setFormValidation] = useState<{ Name: boolean }>({ Name: false });
-    const [isSubmitted, setisSubmitted] = useState<boolean>(false);
+    const [IsSubmitted, setIsSubmitted] = useState<boolean>(false);
+    const [TaskCreated, setTaskCreated] = useState<boolean>(false);
 
     const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>) => setTask(e.target.value);
 
@@ -18,7 +19,9 @@ export default function Tasks() {
         e.preventDefault();
         const Namevalidation = Task.trim() !== '';
         setFormValidation({ Name: Namevalidation });
-        setisSubmitted(true);
+        // Alert Not Created
+        setIsSubmitted(true);
+        setTimeout(() => setIsSubmitted(false), 2000);
         if (!Namevalidation) {
             return
         };
@@ -27,6 +30,9 @@ export default function Tasks() {
             Checked: false
         };
         setTasks([...Tasks, NewTask]);
+        // Alert Created
+        setTaskCreated(true);
+        setTimeout(() => setTaskCreated(false), 2000);
         setTask('');
     }
 
@@ -35,33 +41,7 @@ export default function Tasks() {
             <div className="w-[95%] sm:max-w-[850px] flex flex-col gap-5 p-[17px] z-20 absolute rounded-xl mt-[-8vh] sm:mt-0 shadow-xl bg-white">
                 <form onSubmit={AddNewTask} className="w-full h-full flex items-center gap-4">
                     <Box className="w-full">
-                        <TextField fullWidth type="text" className="w-full" size="medium" label="Create New Task"
-                            value={Task}
-                            onChange={HandelChanges}
-                            sx={{
-                                '& fieldset': {
-                                    borderColor: 'gray',
-                                    border: '2px solid'
-                                },
-                                '& .MuiOutlinedInput-root.Mui-focused fieldset': {
-                                    borderColor: 'gray',
-                                    border: '2px solid'
-                                },
-                                '& .MuiInputLabel-root': {
-                                    color: 'black',
-                                    fontWeight: 'bold'
-                                },
-                                '& .MuiInputLabel-root.Mui-focused': {
-                                    color: 'black',
-                                },
-                                '& .MuiInputBase-input': {
-                                    color: 'black',
-                                    fontWeight: 'bold'
-                                },
-                                '& .MuiOutlinedInput-root': {
-                                    borderRadius: '8px',
-                                },
-                            }} />
+                        <TextField fullWidth type="text" className="w-full" size="medium" label="Create New Task" value={Task} onChange={HandelChanges} sx={{ '& fieldset': { borderColor: 'gray', border: '2px solid' }, '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: 'gray', border: '2px solid' }, '& .MuiInputLabel-root': { color: 'black', fontWeight: 'bold' }, '& .MuiInputLabel-root.Mui-focused': { color: 'black', }, '& .MuiInputBase-input': { color: 'black', fontWeight: 'bold' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' }, }} />
                     </Box>
                     <input
                         type='submit'
@@ -73,7 +53,7 @@ export default function Tasks() {
                     <div className='flex flex-col gap-2'>
                         {Tasks && Tasks.length > 0 ? (
                             Tasks.map((item: TasksType) => (
-                                <ul className='flex justify-between items-center bg-gray-200 p-3 rounded-md'>
+                                <ul className='flex justify-between items-center bg-gray-200 p-3 rounded-md overflow-hidden'>
                                     <div className='flex items-center gap-3 text-xl'>
                                         <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-white'></div>
                                         <li>{item.Name}</li>
@@ -85,9 +65,9 @@ export default function Tasks() {
                                 </ul>
                             ))
                         ) : (
-                            <div className='w-full py-10 flex flex-col gap-5 justify-center items-center text-lg'>
-                                <SlNotebook className='text-7xl' />
-                                <h1 className='w-1/2 sm:w-1/4 text-center'>!You, Dont have any Task</h1>
+                            <div className='w-full py-10 flex flex-col gap-5 justify-center items-center'>
+                                <SlNotebook className='text-[90px]' />
+                                <h1 className='w-1/2 sm:w-1/4 text-center text-xl'>!You, Dont have any Task</h1>
                             </div>
                         )}
                     </div>
@@ -109,11 +89,16 @@ export default function Tasks() {
                 </div> */}
             </div>
         </section>
-        <div className='w-full h-1/2 py-7 flex justify-center items-end absolute bottom-0'>
-            <div className='max-w-[400px]'>
-                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 ${!FormValidation.Name && isSubmitted ? 'opacity-[1] mb-0' : 'opacity-0 mb-[-3rem]'}`}>
+        <div className='w-full h-1/2 py-8 flex justify-center items-end fixed bottom-0 z-40'>
+            <div className='max-w-[800px] flex flex-col gap-4'>
+                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${!FormValidation.Name && IsSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
                     <Alert variant="filled" severity="error">
                         You need to add a task to proceed.
+                    </Alert>
+                </Stack>
+                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${TaskCreated ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                    <Alert variant="filled" severity="success">
+                        Your Task Has Created
                     </Alert>
                 </Stack>
             </div>

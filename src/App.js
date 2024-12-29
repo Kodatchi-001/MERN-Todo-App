@@ -1,4 +1,3 @@
-import { Provider } from "react-redux";
 import Hero from "./components/hero/index";
 import Tasks from "./components/tasks/index";
 
