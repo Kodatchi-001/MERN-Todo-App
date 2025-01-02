@@ -12,6 +12,8 @@ export default function Tasks() {
     const [FormValidation, setFormValidation] = useState<{ Name: boolean }>({ Name: false });
     const [IsSubmitted, setIsSubmitted] = useState<boolean>(false);
     const [TaskCreated, setTaskCreated] = useState<boolean>(false);
+    const [TaskUpdated, setTaskUpdated] = useState<boolean>(false);
+    const [TaskRemoved, setTaskRemoved] = useState<boolean>(false);
 
     const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>) => setTask(e.target.value);
     const AddNewTask = (e: React.ChangeEvent<HTMLFormElement>) => {
@@ -105,6 +107,16 @@ export default function Tasks() {
                         Your Task Has Created
                     </Alert>
                 </Stack>
+                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${TaskUpdated ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                    <Alert variant="filled" severity="info">
+                        Your Task Has Updated
+                    </Alert>
+                </Stack>
+                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${TaskRemoved ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                    <Alert variant="filled" severity="warning">
+                        Your Task Has Removed
+                    </Alert>
+                </Stack> 
             </div>
         </div>
     </>
