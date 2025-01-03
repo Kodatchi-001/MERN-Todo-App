@@ -1,10 +1,12 @@
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TasksType } from '../../types';
 import { SlNotebook } from "react-icons/sl";
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
+import { AddTaskApi, GetTasksApi, RemoveTaskApi, UpdateTaskApi } from '../../api/tasks';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Tasks() {
     const [Task, setTask] = useState<string>('');
@@ -14,9 +16,22 @@ export default function Tasks() {
     const [TaskCreated, setTaskCreated] = useState<boolean>(false);
     const [TaskUpdated, setTaskUpdated] = useState<boolean>(false);
     const [TaskRemoved, setTaskRemoved] = useState<boolean>(false);
+    const [EditingTask, setEditingTask] = useState<string | null>(null);
+    const [EditValue, setEditValue] = useState<string>('');
+
 
     const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>) => setTask(e.target.value);
-    const AddNewTask = (e: React.ChangeEvent<HTMLFormElement>) => {
+
+    const GetTasks = async () => {
+        try {
+            const reponse = await GetTasksApi();
+            setTasks(reponse || []);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const AddNewTask = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         /*---> Validation <---*/
@@ -31,16 +46,68 @@ export default function Tasks() {
         if (!Namevalidation) { return };
 
         /*---> Create New Task <---*/
-        const NewTask: TasksType = { Name: Task, Checked: false };
-        setTasks([...Tasks, NewTask]);
+        if (EditValue) {
+            try {
+                const response = await UpdateTaskApi(EditingTask, { name: Task });
+                setTasks(response || []);
+                setEditingTask(null);
+                setEditValue('');
+                setTask('');
 
-        /*---> Alert Created <---*/
-        setTaskCreated(true);
-        setTimeout(() => setTaskCreated(false), 2000);
+                /*---> Alert Updated <---*/
+                setTaskUpdated(true);
+                setTimeout(() => setTaskUpdated(false), 2000);
+            } catch (error) {
+                console.log(error);
+            }
 
-        /*---> Clear Input <---*/
-        setTask('');
+        } else {
+            const NewTask: TasksType = {
+                id: uuidv4(),
+                name: Task,
+                checked: false
+            };
+            try {
+                await AddTaskApi(NewTask);
+                setTasks((prevstate: TasksType[]) => [...prevstate, NewTask]);
+            } catch (error) {
+                console.log(error);
+            }
+            /*---> Alert Created <---*/
+            setTaskCreated(true);
+            setTimeout(() => setTaskCreated(false), 2000);
+
+            /*---> Clear Input <---*/
+            setTask('');
+        }
     }
+
+    /*---> Remove Task ById <---*/
+    const RemoveTask = async (id: string) => {
+        try {
+            await RemoveTaskApi(id);
+            setTasks(Tasks.filter((item: TasksType) => item.id !== id));
+            /*---> Alert Removed <---*/
+            setTaskRemoved(true);
+            setTimeout(() => setTaskRemoved(false), 2000);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    /*---> Modify Task ById <---*/
+    const EditTask = (id: string) => {
+        const findtask = Tasks.find((item: TasksType) => item.id === id);
+        if (findtask) {
+            setEditingTask(findtask.id);
+            setEditValue(findtask.name);
+            setTask(findtask.name)
+        }
+    }
+
+    useEffect(() => {
+        GetTasks();
+    }, []);
 
     return <>
         <section className="w-full h-[65vh] sm:max-h-[830px] z-20 flex justify-center sm:pt-[9rem] relative">
@@ -51,7 +118,7 @@ export default function Tasks() {
                     </Box>
                     <input
                         type='submit'
-                        value="Add"
+                        value={EditingTask ? "Update" : "Add"}
                         className='px-8 py-[13px] h-full text-xl cursor-pointer duration-500 hover:bg-green-500 bg-black text-white rounded-lg' />
                 </form>
                 <div className='flex flex-col gap-4'>
@@ -59,14 +126,14 @@ export default function Tasks() {
                     <div className='flex flex-col gap-2'>
                         {Tasks && Tasks.length > 0 ? (
                             Tasks.map((item: TasksType) => (
-                                <ul className='flex justify-between items-center bg-gray-200 p-3 rounded-md overflow-hidden'>
+                                <ul key={item?.id} className='flex justify-between items-center bg-gray-200 p-3 rounded-md overflow-hidden'>
                                     <div className='flex items-center gap-3 text-xl'>
                                         <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-white'></div>
-                                        <li>{item.Name}</li>
+                                        <li>{item?.name}</li>
                                     </div>
                                     <div className="w-2/6 h-full flex justify-end items-center gap-1">
-                                        <i className="bx bxs-edit text-3xl cursor-pointer text-green-500"></i>
-                                        <i className="bx bxs-x-square text-3xl cursor-pointer text-red-500"></i>
+                                        <i className="bx bxs-edit text-3xl cursor-pointer text-green-500" onClick={() => EditTask(item?.id)}></i>
+                                        <i className="bx bxs-x-square text-3xl cursor-pointer text-red-500" onClick={() => RemoveTask(item?.id)}></i>
                                     </div>
                                 </ul>
                             ))
@@ -116,7 +183,7 @@ export default function Tasks() {
                     <Alert variant="filled" severity="warning">
                         Your Task Has Removed
                     </Alert>
-                </Stack> 
+                </Stack>
             </div>
         </div>
     </>

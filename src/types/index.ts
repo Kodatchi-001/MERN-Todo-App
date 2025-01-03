@@ -1,4 +1,5 @@
 export interface TasksType {
-    Name: string,
-    Checked: boolean
+    id: string,
+    name: string,
+    checked: boolean
 }
