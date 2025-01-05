@@ -13,7 +13,7 @@ export const GetTasksApi = async () => {
         return data || [];
 
     } catch (error) {
-        console.log("Get Problem :",error)
+        console.log("Get Problem :", error)
     }
 }
 
@@ -32,7 +32,7 @@ export const AddTaskApi = async (newTask: TasksType) => {
         return data || [];
 
     } catch (error) {
-        console.log("POST Problem :",error)
+        console.log("POST Problem :", error)
     }
 }
 
@@ -48,7 +48,7 @@ export const RemoveTaskApi = async (id: string) => {
         return await response.json();
 
     } catch (error) {
-        console.log("DELETE Problem :",error)
+        console.log("DELETE Problem :", error)
     }
 };
 
@@ -63,10 +63,45 @@ export const UpdateTaskApi = async (id: string | null, newName: { name: string }
             },
             body: JSON.stringify(newName)
         });
+        return await response.json();
+
+    } catch (error) {
+        console.log("PUT Problem :", error)
+    }
+}
+
+// Get Tasks Checked
+export const GetTasksCheckedApi = async () => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/checked-task`, {
+            method: "GET",
+            headers: {
+                Accept: 'application/json',
+            }
+        });
         const data = await response.json();
         return data || [];
 
     } catch (error) {
-        console.log("PUT Problem :",error)
+        console.log(error);
+    }
+}
+
+// Task TCheck
+export const TasksCheckedApi = async (id: string | null, checked: boolean) => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/checked-task/${id}`, {
+            method: 'PUT',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ checked })
+        });
+        const data = await response.json();
+        return data || [];
+
+    } catch (error) {
+        console.log("PUT Problem :", error)
     }
 }

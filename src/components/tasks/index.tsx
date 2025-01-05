@@ -5,12 +5,13 @@ import { TasksType } from '../../types';
 import { SlNotebook } from "react-icons/sl";
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
-import { AddTaskApi, GetTasksApi, RemoveTaskApi, UpdateTaskApi } from '../../api/tasks';
+import { AddTaskApi, GetTasksApi, GetTasksCheckedApi, RemoveTaskApi, TasksCheckedApi, UpdateTaskApi } from '../../api/tasks';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function Tasks() {
     const [Task, setTask] = useState<string>('');
     const [Tasks, setTasks] = useState<TasksType[]>([]);
+    const [TasksChecked, setTasksChecked] = useState<TasksType[]>([]);
     const [FormValidation, setFormValidation] = useState<{ Name: boolean }>({ Name: false });
     const [IsSubmitted, setIsSubmitted] = useState<boolean>(false);
     const [TaskCreated, setTaskCreated] = useState<boolean>(false);
@@ -19,13 +20,20 @@ export default function Tasks() {
     const [EditingTask, setEditingTask] = useState<string | null>(null);
     const [EditValue, setEditValue] = useState<string>('');
 
-
     const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>) => setTask(e.target.value);
-
     const GetTasks = async () => {
         try {
             const reponse = await GetTasksApi();
             setTasks(reponse || []);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const GetTasksChecked = async () => {
+        try {
+            const reponse = await GetTasksCheckedApi();
+            setTasksChecked(reponse || []);
         } catch (error) {
             console.log(error);
         }
@@ -48,8 +56,8 @@ export default function Tasks() {
         /*---> Create New Task <---*/
         if (EditValue) {
             try {
-                const response = await UpdateTaskApi(EditingTask, { name: Task });
-                setTasks(response || []);
+                await UpdateTaskApi(EditingTask, { name: Task });
+                await GetTasks();
                 setEditingTask(null);
                 setEditValue('');
                 setTask('');
@@ -62,14 +70,14 @@ export default function Tasks() {
             }
 
         } else {
-            const NewTask: TasksType = {
+            const newTask: TasksType = {
                 id: uuidv4(),
                 name: Task,
                 checked: false
             };
             try {
-                await AddTaskApi(NewTask);
-                setTasks((prevstate: TasksType[]) => [...prevstate, NewTask]);
+                await AddTaskApi(newTask);
+                await GetTasks();
             } catch (error) {
                 console.log(error);
             }
@@ -86,7 +94,8 @@ export default function Tasks() {
     const RemoveTask = async (id: string) => {
         try {
             await RemoveTaskApi(id);
-            setTasks(Tasks.filter((item: TasksType) => item.id !== id));
+            await GetTasks();
+            await GetTasksChecked();
             /*---> Alert Removed <---*/
             setTaskRemoved(true);
             setTimeout(() => setTaskRemoved(false), 2000);
@@ -98,15 +107,30 @@ export default function Tasks() {
     /*---> Modify Task ById <---*/
     const EditTask = (id: string) => {
         const findtask = Tasks.find((item: TasksType) => item.id === id);
+
         if (findtask) {
             setEditingTask(findtask.id);
             setEditValue(findtask.name);
-            setTask(findtask.name)
+            setTask(findtask.name);
+        } else {
+            console.log("Task not found!");
+        }
+    }
+
+    const TaskChecked = async (id: string, checked: boolean) => {
+        try {
+            const newChecked = !checked
+            await TasksCheckedApi(id, newChecked);
+            await GetTasks();
+            await GetTasksChecked();
+        } catch (error) {
+            console.log(error);
         }
     }
 
     useEffect(() => {
         GetTasks();
+        GetTasksChecked();
     }, []);
 
     return <>
@@ -121,14 +145,14 @@ export default function Tasks() {
                         value={EditingTask ? "Update" : "Add"}
                         className='px-8 py-[13px] h-full text-xl cursor-pointer duration-500 hover:bg-green-500 bg-black text-white rounded-lg' />
                 </form>
-                <div className='flex flex-col gap-4'>
+                <div className={`flex flex-col gap-4 ${Tasks.length > 0 ? '' : 'hidden'}`}>
                     <li className='text-xl'>Tasks</li>
                     <div className='flex flex-col gap-2'>
-                        {Tasks && Tasks.length > 0 ? (
+                        {Tasks && Tasks.length > 0 && (
                             Tasks.map((item: TasksType) => (
                                 <ul key={item?.id} className='flex justify-between items-center bg-gray-200 p-3 rounded-md overflow-hidden'>
                                     <div className='flex items-center gap-3 text-xl'>
-                                        <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-white'></div>
+                                        <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-white' onClick={() => TaskChecked(item?.id, item?.checked)}></div>
                                         <li>{item?.name}</li>
                                     </div>
                                     <div className="w-2/6 h-full flex justify-end items-center gap-1">
@@ -137,32 +161,32 @@ export default function Tasks() {
                                     </div>
                                 </ul>
                             ))
-                        ) : (
-                            <div className='w-full py-10 flex flex-col gap-5 justify-center items-center'>
-                                <SlNotebook className='text-[90px]' />
-                                <h1 className='w-1/2 sm:w-1/4 text-center text-xl'>!You, Dont have any Task</h1>
-                            </div>
                         )}
                     </div>
                 </div>
-                {/* <div className='flex flex-col gap-4'>
+                <div className={`flex flex-col gap-4 ${TasksChecked.length > 0 ? '' : 'hidden'}`}>
                     <li className='text-xl'>Tasks Checked</li>
-                    <div>
-                        <ul className='flex justify-between items-center bg-gray-200 p-3 rounded-md'>
-                            <div className='flex items-center gap-3 text-xl'>
-                                <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-black'></div>
-                                <li>Task</li>
-                            </div>
-                            <div className="w-2/6 h-full flex justify-end items-center gap-1">
-                                <i className="bx bxs-edit text-3xl cursor-pointer text-green-500"></i>
-                                <i className="bx bxs-x-square text-3xl cursor-pointer text-red-500"></i>
-                            </div>
-                        </ul>
-                    </div>
-                </div> */}
+                    {TasksChecked && TasksChecked.length > 0 && (
+                        TasksChecked.map((item: TasksType) => (
+                            <ul key={item?.id} className='flex justify-between items-center bg-gray-200 p-3 rounded-md overflow-hidden'>
+                                <div className='flex items-center gap-3 text-xl'>
+                                    <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-black' onClick={() => TaskChecked(item?.id, item?.checked)}></div>
+                                    <li>{item?.name}</li>
+                                </div>
+                                <div className="w-2/6 h-full flex justify-end items-center gap-1">
+                                    <i className="bx bxs-x-square text-3xl cursor-pointer text-red-500" onClick={() => RemoveTask(item?.id)}></i>
+                                </div>
+                            </ul>
+                        ))
+                    )}
+                </div>
+                <div className={`w-full py-10 flex flex-col gap-5 justify-center items-center ${Tasks.length > 0 || TasksChecked.length > 0 ? 'hidden' : ''}`}>
+                    <SlNotebook className='text-[90px]' />
+                    <h1 className='w-1/2 sm:w-1/4 text-center text-xl'>!You, Dont have any Task</h1>
+                </div>
             </div>
-        </section >
-        <div className='w-full h-1/2 py-8 flex justify-center items-end fixed bottom-0 z-40'>
+        </section>
+        <div className='w-full h-1/2 py-8 flex justify-center items-end fixed bottom-0'>
             <div className='max-w-[800px] flex flex-col gap-4'>
                 <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${!FormValidation.Name && IsSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
                     <Alert variant="filled" severity="error">
