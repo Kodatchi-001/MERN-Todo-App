@@ -1,6 +1,6 @@
 import { TasksType } from "../types";
 
-// Get All Tasks
+// Get All Tasks-Not-Checked
 export const GetTasksApi = async () => {
     try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/tasks`, {
@@ -9,11 +9,14 @@ export const GetTasksApi = async () => {
                 Accept: 'application/json',
             }
         });
+        if (!response.ok) {
+            throw new Error('Failed to fetch tasks');
+        }
         const data = await response.json();
         return data || [];
-
     } catch (error) {
-        console.log("Get Problem :", error)
+        console.error("Get Problem:", error);
+        return [];
     }
 }
 
@@ -28,11 +31,13 @@ export const AddTaskApi = async (newTask: TasksType) => {
             },
             body: JSON.stringify(newTask || {})
         });
-        const data = await response.json();
-        return data || [];
-
+        if (!response.ok) {
+            throw new Error('Failed to add task');
+        }
+        return await response.json();
     } catch (error) {
-        console.log("POST Problem :", error)
+        console.error("POST Problem:", error);
+        return { message: "Error adding task" };
     }
 }
 
@@ -45,10 +50,13 @@ export const RemoveTaskApi = async (id: string) => {
                 Accept: 'application/json'
             }
         });
+        if (!response.ok) {
+            throw new Error('Failed to delete task');
+        }
         return await response.json();
-
     } catch (error) {
-        console.log("DELETE Problem :", error)
+        console.error("DELETE Problem:", error);
+        return { message: "Error removing task" };
     }
 };
 
@@ -61,16 +69,19 @@ export const UpdateTaskApi = async (id: string | null, newName: { name: string }
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(newName)
+            body: JSON.stringify(newName || {})
         });
+        if (!response.ok) {
+            throw new Error('Failed to update task');
+        }
         return await response.json();
-
     } catch (error) {
-        console.log("PUT Problem :", error)
+        console.error("PUT Problem:", error);
+        return { message: "Error updating task" };
     }
 }
 
-// Get Tasks Checked
+// Get All Tasks-Checked
 export const GetTasksCheckedApi = async () => {
     try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/checked-task`, {
@@ -79,11 +90,14 @@ export const GetTasksCheckedApi = async () => {
                 Accept: 'application/json',
             }
         });
+        if (!response.ok) {
+            throw new Error('Failed to fetch checked tasks');
+        }
         const data = await response.json();
         return data || [];
-
     } catch (error) {
-        console.log(error);
+        console.error("Get Checked Tasks Problem:", error);
+        return [];
     }
 }
 
@@ -98,10 +112,13 @@ export const TasksCheckedApi = async (id: string | null, checked: boolean) => {
             },
             body: JSON.stringify({ checked })
         });
+        if (!response.ok) {
+            throw new Error('Failed to update task status');
+        }
         const data = await response.json();
         return data || [];
-
     } catch (error) {
-        console.log("PUT Problem :", error)
+        console.error("PUT Problem:", error);
+        return { message: "Error updating task status" };
     }
 }

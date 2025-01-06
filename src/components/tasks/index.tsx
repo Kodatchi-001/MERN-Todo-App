@@ -20,39 +20,39 @@ export default function Tasks() {
     const [EditingTask, setEditingTask] = useState<string | null>(null);
     const [EditValue, setEditValue] = useState<string>('');
 
-    const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>) => setTask(e.target.value);
+    /*---> Handel Input <---*/
+    const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>): void => {
+        setTask(e.target.value);
+    };
+    /*---> Get Tasks <---*/
     const GetTasks = async () => {
         try {
             const reponse = await GetTasksApi();
             setTasks(reponse || []);
         } catch (error) {
-            console.log(error);
+            return console.error("Get Problem:", error);
         }
     }
-
+    /*---> Get Tasks-Checked <---*/
     const GetTasksChecked = async () => {
         try {
             const reponse = await GetTasksCheckedApi();
             setTasksChecked(reponse || []);
         } catch (error) {
-            console.log(error);
+            return console.error("Get Checked Tasks Problem:", error);
         }
     }
-
+    /*---> Create New-Task <---*/
     const AddNewTask = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         /*---> Validation <---*/
         const Namevalidation = Task.trim() !== '';
         setFormValidation({ Name: Namevalidation });
-
         /*---> Alert Not Created <---*/
         setIsSubmitted(true);
         setTimeout(() => setIsSubmitted(false), 2000);
-
         /*---> Return If Note Valid <---*/
         if (!Namevalidation) { return };
-
         /*---> Create New Task <---*/
         if (EditValue) {
             try {
@@ -61,12 +61,11 @@ export default function Tasks() {
                 setEditingTask(null);
                 setEditValue('');
                 setTask('');
-
                 /*---> Alert Updated <---*/
                 setTaskUpdated(true);
                 setTimeout(() => setTaskUpdated(false), 2000);
             } catch (error) {
-                console.log(error);
+                return console.error("Update New-Task Problem:", error);
             }
 
         } else {
@@ -79,17 +78,15 @@ export default function Tasks() {
                 await AddTaskApi(newTask);
                 await GetTasks();
             } catch (error) {
-                console.log(error);
+                return console.error("Create New-Task Problem:", error);
             }
             /*---> Alert Created <---*/
             setTaskCreated(true);
             setTimeout(() => setTaskCreated(false), 2000);
-
             /*---> Clear Input <---*/
             setTask('');
         }
     }
-
     /*---> Remove Task ById <---*/
     const RemoveTask = async (id: string) => {
         try {
@@ -100,23 +97,21 @@ export default function Tasks() {
             setTaskRemoved(true);
             setTimeout(() => setTaskRemoved(false), 2000);
         } catch (error) {
-            console.log(error);
+            return console.error("DELETE Problem:", error);
         }
     }
-
     /*---> Modify Task ById <---*/
     const EditTask = (id: string) => {
         const findtask = Tasks.find((item: TasksType) => item.id === id);
-
         if (findtask) {
             setEditingTask(findtask.id);
             setEditValue(findtask.name);
             setTask(findtask.name);
         } else {
-            console.log("Task not found!");
+            return console.log("Task not found!");
         }
     }
-
+    /*---> Modify Task Checked <---*/
     const TaskChecked = async (id: string, checked: boolean) => {
         try {
             const newChecked = !checked
@@ -124,10 +119,10 @@ export default function Tasks() {
             await GetTasks();
             await GetTasksChecked();
         } catch (error) {
-            console.log(error);
+            return console.error("Checked Task Problem:", error);
         }
     }
-
+    /*---> Get Tasks <---*/
     useEffect(() => {
         GetTasks();
         GetTasksChecked();
