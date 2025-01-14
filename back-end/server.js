@@ -14,9 +14,10 @@ app.get("/tasks", async (req, res) => {
         if (tasks.length > 0) {
             return res.status(200).json(tasks);
         }
-        return res.status(404).json({ message: "!You,don\'t have any Task" });
+        return res.status(200).json([]);
     } catch (error) {
-        return console.error("Error fetching tasks:", error);
+        console.error("Error fetching tasks:", error);
+        return res.status(500).json({ message: "Error fetching tasks" });
     }
 });
 
@@ -28,9 +29,10 @@ app.post("/tasks", async (req, res) => {
     try {
         const newData = new Tasks({ id, name, checked });
         await newData.save();
-        return res.status(200).json({ message: 'Task has been created!' });
+        return res.status(201).json({ message: 'Task has been created!' });
     } catch (error) {
-        return console.error("Error creating task:", error);
+        console.error("Error creating task:", error);
+        return res.status(500).json({ message: "Error creating task" });
     }
 });
 
@@ -43,7 +45,8 @@ app.delete("/tasks/:id", async (req, res) => {
         }
         return res.status(404).json({ message: "Task not found" });
     } catch (error) {
-        return console.error("Error deleting task:", error);
+        console.error("Error deleting task:", error);
+        return res.status(500).json({ message: "Error deleting task" });
     }
 });
 
@@ -58,11 +61,12 @@ app.put("/tasks/:id", async (req, res) => {
         if (task) {
             task.name = name;
             await task.save();
-            return res.status(200).send('Task Updated!');
+            return res.status(200).json('Task Updated!');
         }
-        return res.status(404).send('Task not found!');
+        return res.status(404).json('Task not found!');
     } catch (error) {
-        return console.error("Error updating task:", error);
+        console.error("Error updating task:", error);
+        return res.status(500).json({ message: "Error updating task" });
     }
 });
 
@@ -72,11 +76,12 @@ app.get("/checked-task", async (req, res) => {
         if (taskChecked.length > 0) {
             return res.status(200).json(taskChecked);
         }
-        return res.status(404).json({ message: "No checked tasks found!" });
+        return res.status(200).json([]);
     } catch (error) {
-        return console.error("Error fetching checked tasks:", error);
+        console.error("Error fetching checked tasks:", error);
+        return res.status(500).json({ message: "Error fetching checked tasks" });
     }
-})
+});
 
 app.put("/checked-task/:id", async (req, res) => {
     const { id } = req.params;
@@ -93,10 +98,10 @@ app.put("/checked-task/:id", async (req, res) => {
         }
         return res.status(404).json({ message: 'Task not found' });
     } catch (error) {
-        return console.error("Error updating task status:", error);
+        console.error("Error updating checked tasks:", error);
+        return res.status(500).json({ message: "Error updating checked tasks" });
     }
 });
-
 
 mongoose.connect(process.env.MONGO_URL)
     .then(() => {
