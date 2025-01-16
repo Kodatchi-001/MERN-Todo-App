@@ -1,8 +1,7 @@
 const express = require('express');
 const cors = require("cors");
 const mongoose = require('mongoose');
-const Tasks = require("./model/taskModel.js");
-const Account = require("./model/accountModel.js");
+const Account = require("./model/userModel.js");
 require('dotenv').config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -11,39 +10,66 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get("/tasks", async (req, res) => {
+const authenticateToken = (req, res, next) => {
+    const token = req.headers["authorization"] && req.headers["authorization"].split(" ")[1];
+    if (!token) {
+        return res.status(401).json({ message: "We dont have token!" });
+    }
+    jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
+        if (error) {
+            return res.status(403).json({ message: "Token invalide" });
+        }
+        req.user = user
+        next();
+    })
+}
+
+app.get("/tasks", authenticateToken, async (req, res) => {
     try {
-        const tasks = await Tasks.find({ checked: false });
-        if (tasks.length > 0) {
-            return res.status(200).json(tasks);
+        const user = await Account.findOne({ id: req.user.id });
+        if (!user) {
+            return res.status(404).json({ message: "Utilisateur introuvable" });
+        }
+        if (user.tasks.length > 0) {
+            return res.status(200).json(user.tasks);
         }
         return res.status(200).json([]);
     } catch (error) {
         console.error("Error fetching tasks:", error);
         return res.status(500).json({ message: "Error fetching tasks" });
     }
-});
+})
 
-app.post("/tasks", async (req, res) => {
+app.post("/tasks", authenticateToken, async (req, res) => {
     const { id, name, checked } = req.body;
     if (!name) {
         return res.status(400).json({ message: "Task name is required" });
     };
     try {
-        const newData = new Tasks({ id, name, checked });
-        await newData.save();
+        const user = await Account.findOne({ id: req.user.id });
+        if (!user) {
+            return res.status(404).json({ message: "Utilisateur introuvable" });
+        }
+        user.tasks.push({ id, name, checked });
+        await user.save();
         return res.status(201).json({ message: 'Task has been created!' });
     } catch (error) {
         console.error("Error creating task:", error);
         return res.status(500).json({ message: "Error creating task" });
     }
-});
+})
 
-app.delete("/tasks/:id", async (req, res) => {
+app.delete("/tasks/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await Tasks.deleteOne({ id: id });
-        if (result.deletedCount === 1) {
+        const user = await Account.findOne({ id: req.user.id });
+        if (!user) {
+            return res.status(404).json({ message: "Utilisateur introuvable" });
+        }
+        const filterTasks = user.tasks.filter((item) => item.id !== id);
+        if (filterTasks) {
+            user.tasks = filterTasks;
+            await user.save();
             return res.status(200).send('Task Deleted!');
         }
         return res.status(404).json({ message: "Task not found" });
@@ -51,19 +77,23 @@ app.delete("/tasks/:id", async (req, res) => {
         console.error("Error deleting task:", error);
         return res.status(500).json({ message: "Error deleting task" });
     }
-});
+})
 
-app.put("/tasks/:id", async (req, res) => {
+app.put("/tasks/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
     if (!name) {
         return res.status(400).json({ message: "Task name is required!" });
     };
     try {
-        const task = await Tasks.findOne({ id: id });
-        if (task) {
-            task.name = name;
-            await task.save();
+        const user = await Account.findOne({ id: req.user.id });
+        if (!user) {
+            return res.status(404).json({ message: "Utilisateur introuvable" });
+        }
+        const findTask = user.tasks.find((item) => item.id === id);
+        if (findTask) {
+            findTask.name = name;
+            await user.save();
             return res.status(200).json('Task Updated!');
         }
         return res.status(404).json('Task not found!');
@@ -71,11 +101,15 @@ app.put("/tasks/:id", async (req, res) => {
         console.error("Error updating task:", error);
         return res.status(500).json({ message: "Error updating task" });
     }
-});
+})
 
-app.get("/checked-task", async (req, res) => {
+app.get("/checked-task", authenticateToken, async (req, res) => {
     try {
-        const taskChecked = await Tasks.find({ checked: true });
+        const user = await Account.findOne({ id: req.user.id });
+        if (!user) {
+            return res.status(404).json({ message: "Utilisateur introuvable" });
+        }
+        const taskChecked = user.tasks.filter((item) => item.checked === true);
         if (taskChecked.length > 0) {
             return res.status(200).json(taskChecked);
         }
@@ -86,17 +120,21 @@ app.get("/checked-task", async (req, res) => {
     }
 });
 
-app.put("/checked-task/:id", async (req, res) => {
+app.put("/checked-task/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { checked } = req.body;
     if (checked === undefined) {
         return res.status(400).json({ message: "Checked value is required" });
     };
     try {
-        const findTask = await Tasks.findOne({ id: id });
+        const user = await Account.findOne({ id: req.user.id });
+        if (!user) {
+            return res.status(404).json({ message: "Utilisateur introuvable" });
+        }
+        const findTask = user.tasks.find((item) => item.id === id);
         if (findTask) {
             findTask.checked = checked;
-            await findTask.save();
+            await user.save();
             return res.status(200).json({ message: "Task status updated!" });
         }
         return res.status(404).json({ message: 'Task not found' });
@@ -117,7 +155,7 @@ app.get("/accounts", async (req, res) => {
         console.error("Error fetching accounts:", error);
         return res.status(500).json({ message: "Error fetching accounts" });
     }
-})
+});
 
 app.post("/register", async (req, res) => {
     const { id, fullName, email, password } = req.body;

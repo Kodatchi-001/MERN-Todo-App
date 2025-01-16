@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Home from "./pages/home";
 import SignUp from "./components/account/sign-up";
 import SignIn from "./components/account/sign-in";
@@ -10,7 +10,7 @@ export default function App() {
     <Provider store={Store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={localStorage.getItem("Token") ? <Home /> : <Navigate to="/sign-up" />} />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-in" element={<SignIn />} />
         </Routes>

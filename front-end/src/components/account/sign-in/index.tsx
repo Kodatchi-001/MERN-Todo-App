@@ -8,13 +8,15 @@ import { Account } from "../../../types";
 import { useDispatch, useSelector } from "react-redux";
 import { setisNotSubmitted, setisSubmitted } from "../../../slices/signinSlice";
 import { RootState } from "../../../store/store";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signInApi } from "../../../api/account";
 
 export default function SignIn() {
     /*---> States <---*/
     const [account, setAccount] = useState<Account>({ email: '', password: '' });
     const reduxDispatch = useDispatch();
     const readStates = useSelector((state: RootState) => state.signIn);
+    const navigate = useNavigate();
 
     /*---> Handel Values <---*/
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -31,18 +33,21 @@ export default function SignIn() {
             setTimeout(() => { reduxDispatch(setisNotSubmitted(false)); }, 2000);
             return
         }
-        // try {
-        //     const response = ;
-        //     if (response?.message === '') {
-        //         setIsSubmitted(true);
-        //         setTimeout(() => { setIsSubmitted(false) }, 2000);
-        //     }
-        // } catch (error) {
-        //     console.error("Problem Create NewAccount and send to dataBase", error);
-        // }
-        setAccount({ fullName: '', email: '', password: '' });
-        reduxDispatch(setisSubmitted(true));
-        setTimeout(() => { reduxDispatch(setisSubmitted(false)) }, 2000);
+        try {
+            const response = await signInApi(account || {});
+            if (response?.message === 'Login successful') {
+                localStorage.setItem("Token", response?.token);
+                reduxDispatch(setisSubmitted(true));
+                setTimeout(() => { reduxDispatch(setisSubmitted(false)) }, 2000);
+                navigate("/");
+            } else if (response?.message === 'Account not found') {
+                alert(response?.message);
+            }
+            console.log(response);
+        } catch (error) {
+            console.error("Problem to login and send to dataBase", error);
+        }
+        setAccount({ email: '', password: '' });
     }
 
     return <>

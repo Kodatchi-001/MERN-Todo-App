@@ -8,13 +8,16 @@ import { Account } from "../../../types";
 import { useDispatch, useSelector } from "react-redux";
 import { setisNotSubmitted, setisSubmitted } from "../../../slices/signupSlice";
 import { RootState } from "../../../store/store";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { signUpApi } from "../../../api/account";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function SignUp() {
     /*---> States <---*/
     const [account, setAccount] = useState<Account>({ fullName: '', email: '', password: '' });
     const reduxDispatch = useDispatch();
     const readStates = useSelector((state: RootState) => state.signUp);
+    const navigate = useNavigate();
 
     /*---> Handel Values <---*/
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -32,18 +35,26 @@ export default function SignUp() {
             setTimeout(() => { reduxDispatch(setisNotSubmitted(false)); }, 2000);
             return
         }
-        // try {
-        //     const response = test;
-        //     if (response?.message === '') {
-        //         setIsSubmitted(true);
-        //         setTimeout(() => { setIsSubmitted(false) }, 2000);
-        //     }
-        // } catch (error) {
-        //     console.error("Problem Create NewAccount and send to dataBase", error);
-        // }
+        try {
+            const newAccount: Account = {
+                id: uuidv4(),
+                fullName: account?.fullName,
+                email: account?.email,
+                password: account?.password
+            }
+            const response = await signUpApi(newAccount || {});
+            if (response?.message === 'Account has been created!') {
+                localStorage.setItem("Token", response?.token);
+                reduxDispatch(setisSubmitted(true));
+                setTimeout(() => { reduxDispatch(setisSubmitted(false)) }, 2000);
+                navigate("/");
+            } else if (response?.message === 'Email already exists') {
+                alert(response?.message);
+            }
+        } catch (error) {
+            console.error("Problem Create NewAccount and send to dataBase", error);
+        }
         setAccount({ fullName: '', email: '', password: '' });
-        reduxDispatch(setisSubmitted(true));
-        setTimeout(() => { reduxDispatch(setisSubmitted(false)) }, 2000);
     }
 
     return <>

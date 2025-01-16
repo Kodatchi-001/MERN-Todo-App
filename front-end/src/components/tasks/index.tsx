@@ -10,11 +10,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from 'react-redux';
 import { setEditingTask, setEditValue, setIsSubmitted, setTask, setTaskActions, setTasks, setTasksChecked } from '../../slices/taskSlice';
 import { RootState } from '../../store/store';
+import { CiLogout } from "react-icons/ci";
+import { useNavigate } from 'react-router-dom';
 
 export default function Tasks() {
     /*---> States <---*/
     const reduxDispatch = useDispatch();
     const readStates = useSelector((state: RootState) => state?.taskSlice);
+    const navigate = useNavigate();
 
     /*---> Handel Input <---*/
     const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -124,6 +127,11 @@ export default function Tasks() {
             return console.error("Checked Task Problem:", error);
         }
     }
+    /*---> LogOut <---*/
+    const logOut = () => {
+        localStorage.removeItem("Token");
+        navigate("/sign-up");
+    }
     /*---> Get Tasks <---*/
     useEffect(() => {
         GetTasks();
@@ -183,29 +191,36 @@ export default function Tasks() {
                 </div>
             </div>
         </section>
-        <div className='w-full py-8 flex justify-center items-end fixed bottom-0 z-40'>
-            <div className='max-w-[800px] flex flex-col gap-4'>
-                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.taskActions === 'notFound' && readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
-                    <Alert variant="filled" severity="error">
-                        You need to add a task to proceed.
-                    </Alert>
-                </Stack>
-                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.taskActions === 'Created' && readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
-                    <Alert variant="filled" severity="success">
-                        Your Task Has Created
-                    </Alert>
-                </Stack>
-                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.taskActions === 'Update' && readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
-                    <Alert variant="filled" severity="info">
-                        Your Task Has Updated
-                    </Alert>
-                </Stack>
-                <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.taskActions === 'Removed' && readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
-                    <Alert variant="filled" severity="warning">
-                        Your Task Has Removed
-                    </Alert>
-                </Stack>
+        <div className='w-full p-8 fixed bottom-0 z-40'>
+            <div className='w-full h-full flex justify-center items-center relative'>
+                <div className='max-w-[800px] flex flex-col gap-4'>
+                    <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.taskActions === 'notFound' && readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                        <Alert variant="filled" severity="error">
+                            You need to add a task to proceed.
+                        </Alert>
+                    </Stack>
+                    <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.taskActions === 'Created' && readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                        <Alert variant="filled" severity="success">
+                            Your Task Has Created
+                        </Alert>
+                    </Stack>
+                    <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.taskActions === 'Update' && readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                        <Alert variant="filled" severity="info">
+                            Your Task Has Updated
+                        </Alert>
+                    </Stack>
+                    <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.taskActions === 'Removed' && readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                        <Alert variant="filled" severity="warning">
+                            Your Task Has Removed
+                        </Alert>
+                    </Stack>
+                </div>
             </div>
+        </div>
+        <div className='w-full flex p-10 fixed bottom-0 z-50'>
+            <button className='p-[11px] text-[25px] rounded-full shadow-[#00000050] shadow-md text-black' onClick={logOut}>
+                <CiLogout />
+            </button>
         </div>
     </>
 }
