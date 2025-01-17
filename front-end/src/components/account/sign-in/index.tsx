@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import { useState } from "react";
 import { Account } from "../../../types";
 import { useDispatch, useSelector } from "react-redux";
-import { setisNotSubmitted, setisSubmitted } from "../../../slices/signinSlice";
+import { setIsAlready, setIsNotSubmitted, setIsSubmitted } from "../../../slices/signinSlice";
 import { RootState } from "../../../store/store";
 import { Link, useNavigate } from "react-router-dom";
 import { signInApi } from "../../../api/account";
@@ -29,25 +29,26 @@ export default function SignIn() {
         const email: boolean = account?.email?.trim() !== '';
         const password: boolean = account?.password?.trim() !== '';
         if (!email || !password) {
-            reduxDispatch(setisNotSubmitted(true));
-            setTimeout(() => { reduxDispatch(setisNotSubmitted(false)); }, 2000);
+            reduxDispatch(setIsNotSubmitted(true));
+            setTimeout(() => { reduxDispatch(setIsNotSubmitted(false)); }, 2000);
             return
         }
         try {
             const response = await signInApi(account || {});
             if (response?.message === 'Login successful') {
                 localStorage.setItem("Token", response?.token);
-                reduxDispatch(setisSubmitted(true));
-                setTimeout(() => { reduxDispatch(setisSubmitted(false)) }, 2000);
+                reduxDispatch(setIsSubmitted(true));
+                setTimeout(() => { reduxDispatch(setIsSubmitted(false)) }, 2000);
                 navigate("/");
+                setAccount({ email: '', password: '' });
             } else if (response?.message === 'Account not found') {
-                alert(response?.message);
+                reduxDispatch(setIsAlready(true));
+                setTimeout(() => { reduxDispatch(setIsAlready(false)) }, 2000);
+                setTimeout(() => { navigate("/sign-up") }, 1000);
             }
-            console.log(response);
         } catch (error) {
-            console.error("Problem to login and send to dataBase", error);
+            console.error("Error during sign-in process: ", error);
         }
-        setAccount({ email: '', password: '' });
     }
 
     return <>
@@ -90,6 +91,11 @@ export default function SignIn() {
                     <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
                         <Alert variant="filled" severity="success">
                             Your Task Has Created
+                        </Alert>
+                    </Stack>
+                    <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.isAlready ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                        <Alert variant="filled" severity="warning">
+                            Account not found
                         </Alert>
                     </Stack>
                 </div>

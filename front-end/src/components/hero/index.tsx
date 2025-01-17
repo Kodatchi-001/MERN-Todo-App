@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react"
+import e from "express";
+import { JSX, useEffect, useState } from "react"
 
 export default function Hero() {
-    const [date, setdate] = useState<Date | null>(null);
+    const [date, setDate] = useState<Date | null>(null);
 
     useEffect(() => {
-        setdate(new Date())
+        setDate(new Date())
     }, []);
 
-    const DisplayDate = () => {
+    const displayDate = (): null | JSX.Element => {
         if (date) {
             // Get the full name of the weekday (e.g., "Monday", "Tuesday")
             const dayName: string = date.toLocaleDateString('default', { weekday: 'long' });
@@ -17,12 +18,10 @@ export default function Hero() {
             const month: string = date.toLocaleDateString('default', { month: 'long' });
             // Get the full year (e.g., 2024)
             const year: number = date.getFullYear();
-
             // return date
             return <h1 className="text-2xl lg:text-lg">{`${dayName}, ${day} ${month} ${year}`}</h1>
         }
-
-        return;
+        return null;
     }
 
     return <>
@@ -30,7 +29,7 @@ export default function Hero() {
             <div className="w-full h-full flex justify-center bg-[#00000053]">
                 <div className="w-full sm:max-w-[750px] xl:max-w-[850px] h-full flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-3 sm:gap-0 pb-5 sm:pb-10 text-white">
                     <h1 className="text-4xl lg:text-2xl">Todo-App</h1>
-                    {DisplayDate()}
+                    {displayDate()}
                 </div>
             </div>
         </nav>

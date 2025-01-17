@@ -19,57 +19,59 @@ export default function Tasks() {
     const readStates = useSelector((state: RootState) => state?.taskSlice);
     const navigate = useNavigate();
 
-    /*---> Handel Input <---*/
-    const HandelChanges = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    /*---> Handle Input Changes <---*/
+    const handelChanges = (e: React.ChangeEvent<HTMLInputElement>): void => {
         reduxDispatch(setTask(e.target.value));
     };
-    /*---> Get Tasks <---*/
-    const GetTasks = async () => {
+    /*---> Get All Tasks Not Checked <---*/
+    const getTasks = async () => {
         try {
             const response = await GetTasksApi();
             reduxDispatch(setTasks(response || []));
         } catch (error) {
-            return console.error("Get Problem:", error);
+            console.error("Error fetching tasks:", error);
         }
     }
-    /*---> Get Tasks-Checked <---*/
-    const GetTasksChecked = async () => {
+    /*---> Get Checked Tasks <---*/
+    const getTasksChecked = async () => {
         try {
             const response = await GetTasksCheckedApi();
             reduxDispatch(setTasksChecked(response || []));
         } catch (error) {
-            return console.error("Get Checked Tasks Problem:", error);
+            console.error("Error fetching checked tasks:", error);
         }
     }
-    /*---> Create New-Task <---*/
-    const AddNewTask = async (e: React.ChangeEvent<HTMLFormElement>) => {
+    /*---> Add New Task <---*/
+    const addNewTask = async (e: React.ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
-        /*---> Validation <---*/
-        const Namevalidation = readStates?.task.trim() !== '';
-        /*---> Return If Note Valid <---*/
-        if (!Namevalidation) {
-            /*---> Alert Not Created <---*/
+        /*---> Validate Task Name <---*/
+        const nameValidation = readStates?.task.trim() !== '';
+
+        /*---> Return if Task Name is Empty <---*/
+        if (!nameValidation) {
             reduxDispatch(setTaskActions('notFound'));
             reduxDispatch(setIsSubmitted(true));
-            setTimeout(() => { reduxDispatch(setIsSubmitted(false)) }, 2000);
-            return
-        };
-        /*---> Create New Task <---*/
+            setTimeout(() => reduxDispatch(setIsSubmitted(false)), 2000);
+            return;
+        }
+
+        /*---> Update Existing Task <---*/
         if (readStates?.editingTask) {
             try {
                 await UpdateTaskApi(readStates?.editingTask, { name: readStates?.task });
-                await GetTasks();
+                getTasks();
                 reduxDispatch(setEditingTask(null));
                 reduxDispatch(setEditValue(''));
                 reduxDispatch(setTask(''));
-                /*---> Alert Updated <---*/
-                reduxDispatch(setTaskActions('Update'));
+                /*---> Display Task Updated Alert <---*/
+                reduxDispatch(setTaskActions('Updated'));
                 reduxDispatch(setIsSubmitted(true));
                 setTimeout(() => reduxDispatch(setIsSubmitted(false)), 2000);
             } catch (error) {
-                return console.error("Update New-Task Problem:", error);
+                console.error("Error updating task:", error);
             }
 
+            /*---> Create New Task <---*/
         } else {
             const newTask: TasksType = {
                 id: uuidv4(),
@@ -78,72 +80,72 @@ export default function Tasks() {
             };
             try {
                 await AddTaskApi(newTask);
-                await GetTasks();
+                getTasks();
             } catch (error) {
-                return console.error("Create New-Task Problem:", error);
+                console.error("Error creating task:", error);
             }
-            /*---> Alert Created <---*/
+            /*---> Display Task Created Alert <---*/
             reduxDispatch(setTaskActions('Created'));
             reduxDispatch(setIsSubmitted(true));
             setTimeout(() => reduxDispatch(setIsSubmitted(false)), 2000);
-            /*---> Clear Input <---*/
+            /*---> Clear Input Field <---*/
             reduxDispatch(setTask(''));
         }
-    }
-    /*---> Remove Task ById <---*/
-    const RemoveTask = async (id: string) => {
+    };
+    /*---> Remove Task by ID <---*/
+    const removeTask = async (id: string) => {
         try {
             await RemoveTaskApi(id);
-            await GetTasks();
-            await GetTasksChecked();
-            /*---> Alert Removed <---*/
+            getTasks();
+            getTasksChecked();
+            /*---> Display Task Removed Alert <---*/
             reduxDispatch(setTaskActions('Removed'));
             reduxDispatch(setIsSubmitted(true));
             setTimeout(() => reduxDispatch(setIsSubmitted(false)), 2000);
         } catch (error) {
-            return console.error("DELETE Problem:", error);
+            console.error("Error deleting task:", error);
         }
     }
-    /*---> Modify Task ById <---*/
-    const EditTask = (id: string) => {
+    /*---> Edit Task by ID <---*/
+    const editTask = (id: string) => {
         const findtask = readStates?.tasks?.find((item: TasksType) => item?.id === id);
-        console.log(findtask)
         if (findtask) {
             reduxDispatch(setEditingTask(findtask?.id));
             reduxDispatch(setEditValue(findtask?.name));
             reduxDispatch(setTask(findtask?.name));
         } else {
-            return console.log("Task not found!");
+            console.log("Task not found!");
+            return;
         }
     }
-    /*---> Modify Task Checked <---*/
-    const TaskChecked = async (id: string, checked: boolean) => {
+    /*---> Update Task Checked Status <---*/
+    const taskChecked = async (id: string, checked: boolean) => {
         try {
-            const newChecked = !checked
+            const newChecked = !checked;
             await TasksCheckedApi(id, newChecked);
-            await GetTasks();
-            await GetTasksChecked();
+            getTasks();
+            getTasksChecked();
         } catch (error) {
-            return console.error("Checked Task Problem:", error);
+            console.error("Error toggling task check status:", error);
         }
-    }
-    /*---> LogOut <---*/
+    };
+    /*---> Log Out Functionality <---*/
     const logOut = () => {
         localStorage.removeItem("Token");
         navigate("/sign-up");
-    }
-    /*---> Get Tasks <---*/
+    };
+    /*---> Fetch Tasks and Checked Tasks on Load <---*/
     useEffect(() => {
-        GetTasks();
-        GetTasksChecked();
+        getTasks();
+        getTasksChecked();
     }, []);
 
     return <>
-        <section className="w-full h-[65vh] sm:max-h-[830px] z-20 flex justify-center sm:pt-[9rem] relative">
+        <div className="w-full h-[65vh] sm:max-h-[830px] z-20 flex justify-center sm:pt-[9rem] relative">
             <div className="w-[95%] sm:max-w-[850px] flex flex-col gap-5 p-[17px] z-20 absolute rounded-xl shadow-xl bg-white">
-                <form onSubmit={AddNewTask} className="w-full h-full flex items-center gap-4">
+                <form onSubmit={addNewTask} className="w-full h-full flex items-center gap-4">
                     <Box className="w-full">
-                        <TextField fullWidth type="text" className="w-full" size="medium" label="Create New Task" value={readStates?.task} onChange={HandelChanges} sx={{ '& fieldset': { borderColor: 'gray', border: '2px solid' }, '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: 'gray', border: '2px solid' }, '& .MuiInputLabel-root': { color: 'black', fontWeight: 'bold' }, '& .MuiInputLabel-root.Mui-focused': { color: 'black', }, '& .MuiInputBase-input': { color: 'black', fontWeight: 'bold' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' }, }} />
+                        <TextField fullWidth type="text" className="w-full" size="medium" label="Create New Task" value={readStates?.task} onChange={handelChanges} sx={{ '& fieldset': { borderColor: 'gray', border: '2px solid' }, '& .MuiOutlinedInput-root.Mui-focused fieldset': { borderColor: 'gray', border: '2px solid' }, '& .MuiInputLabel-root': { color: 'black', fontWeight: 'bold' }, '& .MuiInputLabel-root.Mui-focused': { color: 'black', }, '& .MuiInputBase-input': { color: 'black', fontWeight: 'bold' }, '& .MuiOutlinedInput-root': { borderRadius: '8px' }, }} />
                     </Box>
                     <input
                         type='submit'
@@ -157,12 +159,12 @@ export default function Tasks() {
                             readStates?.tasks?.map((item: TasksType) => (
                                 <ul key={item?.id} className='flex justify-between items-center bg-gray-200 p-3 rounded-md overflow-hidden'>
                                     <div className='flex items-center gap-3 text-xl'>
-                                        <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-white' onClick={() => TaskChecked(item?.id, item?.checked)}></div>
+                                        <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-white' onClick={() => taskChecked(item?.id, item?.checked)}></div>
                                         <li>{item?.name}</li>
                                     </div>
                                     <div className="w-2/6 h-full flex justify-end items-center gap-1">
-                                        <i className="bx bxs-edit text-3xl cursor-pointer text-green-500" onClick={() => EditTask(item?.id)}></i>
-                                        <i className="bx bxs-x-square text-3xl cursor-pointer text-red-500" onClick={() => RemoveTask(item?.id)}></i>
+                                        <i className="bx bxs-edit text-3xl cursor-pointer text-green-500" onClick={() => editTask(item?.id)}></i>
+                                        <i className="bx bxs-x-square text-3xl cursor-pointer text-red-500" onClick={() => removeTask(item?.id)}></i>
                                     </div>
                                 </ul>
                             ))
@@ -175,11 +177,11 @@ export default function Tasks() {
                         readStates?.tasksChecked?.map((item: TasksType) => (
                             <ul key={item?.id} className='flex justify-between items-center bg-gray-200 p-3 rounded-md overflow-hidden'>
                                 <div className='flex items-center gap-3 text-xl'>
-                                    <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-black' onClick={() => TaskChecked(item?.id, item?.checked)}></div>
+                                    <div className='px-[9px] py-[9px] border border-gray-500 rounded-[5px] cursor-pointer bg-black' onClick={() => taskChecked(item?.id, item?.checked)}></div>
                                     <li>{item?.name}</li>
                                 </div>
                                 <div className="w-2/6 h-full flex justify-end items-center gap-1">
-                                    <i className="bx bxs-x-square text-3xl cursor-pointer text-red-500" onClick={() => RemoveTask(item?.id)}></i>
+                                    <i className="bx bxs-x-square text-3xl cursor-pointer text-red-500" onClick={() => removeTask(item?.id)}></i>
                                 </div>
                             </ul>
                         ))
@@ -190,7 +192,7 @@ export default function Tasks() {
                     <h1 className='w-1/2 sm:w-1/4 text-center text-xl'>!You, Dont have any Task</h1>
                 </div>
             </div>
-        </section>
+        </div>
         <div className='w-full p-8 fixed bottom-0 z-40'>
             <div className='w-full h-full flex justify-center items-center relative'>
                 <div className='max-w-[800px] flex flex-col gap-4'>

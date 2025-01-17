@@ -1,16 +1,29 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import Home from "./pages/home";
 import SignUp from "./components/account/sign-up";
 import SignIn from "./components/account/sign-in";
 import { Provider } from "react-redux";
 import Store from "./store/store";
+import { useEffect } from "react";
+
+function ProtectedRoute() {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    if (localStorage.getItem("Token")) {
+      navigate("/");
+    }
+  }, [navigate]);
+
+  return localStorage.getItem("Token") ? <Home /> : <Navigate to="/sign-up" />;
+}
 
 export default function App() {
   return <>
     <Provider store={Store}>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={localStorage.getItem("Token") ? <Home /> : <Navigate to="/sign-up" />} />
+          <Route path="/" element={<ProtectedRoute />} />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/sign-in" element={<SignIn />} />
         </Routes>

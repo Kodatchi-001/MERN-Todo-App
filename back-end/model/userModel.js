@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+/*---> Define schema for connecting to the database <---*/
 const Account = new Schema({
     id: { type: String, required: true },
     fullName: { type: String, required: true },

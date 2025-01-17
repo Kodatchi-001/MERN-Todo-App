@@ -16,7 +16,7 @@ export interface reducerTaskTypes {
     tasksChecked: TasksType[]
     isSubmitted: boolean
     taskActions: string
-    editingTask: null | string,
+    editingTask: null | string
     editValue: string
 
 }

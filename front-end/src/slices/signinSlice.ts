@@ -2,21 +2,25 @@ import { createSlice } from "@reduxjs/toolkit"
 
 const initialState = {
     isNotSubmitted: false,
-    isSubmitted: false
+    isSubmitted: false,
+    isAlready: false,
 };
 
 export const SignInSlice = createSlice({
     name: 'signIn',
     initialState,
     reducers: {
-        setisNotSubmitted(state, action) {
+        setIsNotSubmitted(state, action) {
             state.isNotSubmitted = action.payload
         },
-        setisSubmitted(state, action) {
+        setIsSubmitted(state, action) {
             state.isSubmitted = action.payload
+        },
+        setIsAlready(state, action) {
+            state.isAlready = action.payload
         }
     }
 });
 
-export const { setisNotSubmitted, setisSubmitted } = SignInSlice.actions;
+export const { setIsNotSubmitted, setIsSubmitted, setIsAlready } = SignInSlice.actions;
 export default SignInSlice.reducer;

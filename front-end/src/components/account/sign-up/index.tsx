@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import { useState } from "react";
 import { Account } from "../../../types";
 import { useDispatch, useSelector } from "react-redux";
-import { setisNotSubmitted, setisSubmitted } from "../../../slices/signupSlice";
+import { setIsAlready, setIsNotSubmitted, setIsSubmitted } from "../../../slices/signupSlice";
 import { RootState } from "../../../store/store";
 import { Link, useNavigate } from "react-router-dom";
 import { signUpApi } from "../../../api/account";
@@ -31,8 +31,8 @@ export default function SignUp() {
         const email: boolean = account?.email?.trim() !== '';
         const password: boolean = account?.password?.trim() !== '';
         if (!fullName || !email || !password) {
-            reduxDispatch(setisNotSubmitted(true));
-            setTimeout(() => { reduxDispatch(setisNotSubmitted(false)); }, 2000);
+            reduxDispatch(setIsNotSubmitted(true));
+            setTimeout(() => { reduxDispatch(setIsNotSubmitted(false)); }, 2000);
             return
         }
         try {
@@ -45,16 +45,18 @@ export default function SignUp() {
             const response = await signUpApi(newAccount || {});
             if (response?.message === 'Account has been created!') {
                 localStorage.setItem("Token", response?.token);
-                reduxDispatch(setisSubmitted(true));
-                setTimeout(() => { reduxDispatch(setisSubmitted(false)) }, 2000);
-                navigate("/");
+                reduxDispatch(setIsSubmitted(true));
+                setTimeout(() => { reduxDispatch(setIsSubmitted(false)) }, 2000);
+                setTimeout(() => { navigate("/") }, 1000);
+                setAccount({ fullName: '', email: '', password: '' });
             } else if (response?.message === 'Email already exists') {
-                alert(response?.message);
+                reduxDispatch(setIsAlready(true));
+                setTimeout(() => { reduxDispatch(setIsAlready(false)) }, 2000);
+                setTimeout(() => { navigate("/sign-in") }, 1000);
             }
         } catch (error) {
-            console.error("Problem Create NewAccount and send to dataBase", error);
+            console.error("Error during sign-up process: ", error);
         }
-        setAccount({ fullName: '', email: '', password: '' });
     }
 
     return <>
@@ -100,6 +102,11 @@ export default function SignUp() {
                     <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.isSubmitted ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
                         <Alert variant="filled" severity="success">
                             Your Task Has Created
+                        </Alert>
+                    </Stack>
+                    <Stack sx={{ width: '100%' }} spacing={2} className={`duration-300 scale-110 ${readStates?.isAlready ? 'opacity-100 mb-0' : 'opacity-0 mb-[-4rem]'}`}>
+                        <Alert variant="filled" severity="warning">
+                            Email already exists!
                         </Alert>
                     </Stack>
                 </div>
