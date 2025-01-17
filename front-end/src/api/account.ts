@@ -11,10 +11,6 @@ export const signUpApi = async (newAccount: Account) => {
             },
             body: JSON.stringify(newAccount || '')
         });
-        // Handle non-200 HTTP status codes
-        if (!response.ok) {
-            throw new Error('Failed to create account');
-        }
         return await response.json();
     } catch (error) {
         console.error("Error creating account:", error);
@@ -33,9 +29,6 @@ export const signInApi = async (account: Account) => {
             },
             body: JSON.stringify(account || '')
         });
-        if (!response.ok) {
-            throw new Error('Failed to log in');
-        }
         return await response.json();
     } catch (error) {
         console.error("Error logging in:", error);

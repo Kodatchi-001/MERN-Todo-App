@@ -1,4 +1,3 @@
-import e from "express";
 import { JSX, useEffect, useState } from "react"
 
 export default function Hero() {
