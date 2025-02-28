@@ -1,11 +1,10 @@
-
 # MERN Stack Project
 
 ## Description
 
-This project is a full-stack application built with **MERN** (MongoDB, Express.js, React, Node.js). 
+This project is a full-stack application built with **MENN** (MongoDB, Express.js, Next.js, Node.js). 
 It allows you to create, read, update, and delete data in a MongoDB database via an API built with Express.js and Node.js. 
-The front-end is developed in React, while the back-end uses Express.js to handle HTTP requests and MongoDB for data storage.
+The front-end is developed in Next js, while the back-end uses Express.js to handle HTTP requests and MongoDB for data storage.
 
 ## Features
 
@@ -27,8 +26,8 @@ Before starting, make sure you have the following installed:
 
 1. Clone the project
    ```bash
-   git clone https://github.com/Kodatchi-001/MERN-Todo-App.git
-   cd MERN-Todo-App
+   git clone https://github.com/Kodatchi-001/Etec-Ecommerce.git
+   cd Etec-E-commerce
    ```
 
 2. Navigate to the back-end folder and install dependencies
@@ -41,7 +40,7 @@ Before starting, make sure you have the following installed:
 
 4. Run the back-end server using `nodemon` (if you don't have `nodemon` installed, you can install it globally using `npm install -g nodemon`):
    ```bash
-   nodemon server.js
+   nodemon index.ts
    ```
 
 5. The back-end server will be running at `http://localhost:3000`.
@@ -60,7 +59,7 @@ Before starting, make sure you have the following installed:
 
 3. Start the front-end server
    ```bash
-   npm start
+   npm run dev
    ```
 
 4. The front-end will be running at `http://localhost:3001`.
@@ -79,35 +78,92 @@ Before starting, make sure you have the following installed:
 - **MongoDB**: NoSQL database to store the data.
 - **Mongoose**: ODM to interact with MongoDB and simplify database operations.
 - **CORS**: Middleware to handle cross-origin requests.
-- **React**: JavaScript library to build the user interface.
-
+- **Next Js**: JavaScript framework to build the user interface.
+- **Tailwind CSS**: Utility-first CSS framework for styling.
+- **Framer Motion**: Animation library for React.
+- **Zustand**: State management tool for React.
+  
 ## Project Structure
 
 ```
-/project-root
-    /backend
-        /model
-        server.js
-    /frontend
+/Etec-E-commerce
+    /back-end
+        .env
+        .gitignore
+        /controllers
+            /authentication
+            /category
+            /client
+            /contact
+            /order
+            /product
+            /purchased
+        /dto
+        index.ts
+        /middleware
+        /models
+        nodemon.json
+        package-lock.json
+        package.json
+        /repositories
+            /authentication
+            /category
+            /client
+            /contact
+            /order
+            /product
+            /purchased
+        /routes
+            /authentication
+            /category
+            /client
+            /contact
+            /order
+            /product
+            /purchased
+        tsconfig.json
+    /front-end
+        /public
         /src
-            /assets
+            /api
+                authentication.ts
+                cart.ts
+                category.ts
+                clients.ts
+                product.ts
+                subscribe.ts
+            /app
+                /admin
+                    /pages
+                        /categories
+                        /clients
+                        /contacts
+                        /dashboard
+                        layout.tsx
+                        /orders
+                        /products
+                        /purchased
+                    layout.tsx
+                    page.tsx
+                /auth
+                    /sign-in
+                    /sign-up
+                layout.tsx
+                not-found.tsx
+                page.tsx
             /components
-            /pages
-            /slices
-            /store
+            /data
+            /lib
+            middleware.ts
             /styles
             /types
-            App.js
-            index.js
+        tailwind.config.ts
+        tsconfig.json
+    README.md
     .gitignore
     package.json
-    README.md
 ```
 
 ## Testing
 
 No tests have been implemented in this project yet.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
